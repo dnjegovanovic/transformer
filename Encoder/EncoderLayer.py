@@ -10,15 +10,14 @@ class EncoderLayer(nn.Module):
         Encoder is made up of self attention and feed forward.
     """
 
-    def __init__(self, size, self_attn, feed_forward, dropout, N=2):
+    def __init__(self, size, self_attn, feed_forward, dropout):
         super(EncoderLayer, self).__init__()
 
         self.self_attn = self_attn
         self.size = size
         self.feed_forward = feed_forward
-        self.sublayer = clones(SublayerConnection(size, dropout), N)
+        self.sublayer = clones(SublayerConnection(size, dropout), 2)
 
     def forward(self, x, mask):
-        for subl in self.sublayer:
-            x = subl(x, lambda x: self.self_attn(x, x, x, mask))
-        return x
+        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x, mask))
+        return self.sublayer[1](x, self.feed_forward)
