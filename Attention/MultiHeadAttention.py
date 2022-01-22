@@ -1,7 +1,6 @@
 import torch.nn as nn
 from utils.attention import calc_attention
 from Encoder.Encoder import clones
-import torch.nn.functional as F
 
 
 class MultiHeadAttention(nn.Module):
