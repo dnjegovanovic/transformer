@@ -17,7 +17,7 @@ class PositionalEncoding(nn.Module):
         self.positional_table[:, 1::2] = torch.cos(self.positional_table * self.freq)
 
         self.positional_table = self.positional_table.unsqueeze(0)
-
+ 
         self.register_buffer('positional_table', self.positional_table)
 
     def forward(self, x):
