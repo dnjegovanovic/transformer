@@ -1,6 +1,7 @@
 import torch.nn as nn
-from utils.attention import calc_attention
+
 from Encoder.Encoder import clones
+from utils.attention import calc_attention
 
 
 class MultiHeadAttention(nn.Module):
@@ -22,12 +23,13 @@ class MultiHeadAttention(nn.Module):
             mask = mask.unsqueeze(1)
 
         nbatches = q.size(0)
-        q, k, v = \
-            [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2) for l, x in zip(self.linears, (q, k, v))]
+        q, k, v = [
+            l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
+            for l, x in zip(self.linears, (q, k, v))
+        ]
 
         x, self.attn = calc_attention(q, k, v, mask=mask, dropout=self.dropout)
 
-        x = x.transpose(1, 2).contiguous() \
-            .view(nbatches, -1, self.h * self.d_k)
+        x = x.transpose(1, 2).contiguous().view(nbatches, -1, self.h * self.d_k)
 
         return self.linears[-1](x)

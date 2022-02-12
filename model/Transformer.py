@@ -25,7 +25,7 @@ class Transformer(nn.Module):
         self.position_enc = PositionalEncoding(model_dim, dropout)
 
         self.encoder = Encoder(EncoderLayer(model_dim, self.mh_attn, c(self.pwn), dropout), number_of_layers)
-        self.decoder = Decoder(DecoderLayer(model_dim, self.mh_attn, c(self.pwn), dropout), number_of_layers)
+        self.decoder = Decoder(DecoderLayer(model_dim, c(self.mh_attn),c(self.mh_attn), c(self.pwn), dropout), number_of_layers)
 
         self.src_pos_emb = nn.Sequential(Embeddings(model_dim, src_vocab_size), c(self.position_enc))
         self.trg_pos_emb = nn.Sequential(Embeddings(model_dim, trg_vocab_size), c(self.position_enc))
