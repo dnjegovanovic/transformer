@@ -3,7 +3,7 @@ import torch.nn as nn
 
 class EncoderDecoder(nn.Module):
     """
-        Encoder - Decoder architecture like many others.
+    Encoder - Decoder architecture like many others.
     """
 
     def __init__(self, encoder, decoder, src_embed, tgt_embed, generator):

@@ -1,5 +1,8 @@
+import copy
+import math
+import time
+
 import torch.nn as nn
-import math, copy, time
 
 
 def clones(module, N):

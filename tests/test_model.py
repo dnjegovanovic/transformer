@@ -9,14 +9,17 @@ def test_model_creating():
     position_wise_dim_ff = 2048
     number_of_layers = 2
 
-    tmp_model = Transformer(src_vocab_size,
-                            trg_vocab_size,
-                            number_of_heads,
-                            model_dim,
-                            position_wise_dim_ff,
-                            number_of_layers)
+    tmp_model = Transformer(
+        src_vocab_size,
+        trg_vocab_size,
+        number_of_heads,
+        model_dim,
+        position_wise_dim_ff,
+        number_of_layers,
+    )
 
     tmp_model.make_model()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test_model_creating()

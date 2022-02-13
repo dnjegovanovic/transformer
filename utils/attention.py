@@ -1,13 +1,13 @@
-import torch
 import math
+
+import torch
 import torch.nn.functional as F
 
 
 def calc_attention(query, key, value, mask=None, dropout=None):
     d_k = query.size(-1)
 
-    scores = torch.matmul(query, key.transpose(-2, -1)) \
-             / math.sqrt(d_k)
+    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
 
     if mask is not None:
         scores = scores.masked_fill(mask == 0, -1e9)
