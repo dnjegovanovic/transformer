@@ -5,11 +5,12 @@ from app.model.Optimizer import Optimizer
 from app.model.Transformer import Transformer
 from app.training.BatchesAndMasking import Batch
 from app.training.LabelSmoothing import LabelSmoothing
-from app.training.train import *
+from app.training.train import run_epoch
 
 
 def data_gen(V, batch, nbatches):
-    "Generate random data for a src-tgt copy task."
+    """Generate random data for a src-tgt copy task."""
+
     for i in range(nbatches):
         data = torch.from_numpy(np.random.randint(1, V, size=(batch, 10)))
         data[:, 0] = 1
@@ -19,7 +20,7 @@ def data_gen(V, batch, nbatches):
 
 
 class SimpleLossCompute:
-    "A simple loss compute and train function."
+    """A simple loss compute and train function."""
 
     def __init__(self, generator, criterion, opt=None):
         self.generator = generator
