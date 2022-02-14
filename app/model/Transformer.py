@@ -19,10 +19,10 @@ class Transformer(nn.Module):
         self,
         src_vocab_size,
         trg_vocab_size,
-        number_of_heads,
-        model_dim,
-        position_wise_dim_ff,
-        number_of_layers,
+        number_of_heads=8,
+        model_dim=512,
+        position_wise_dim_ff=2048,
+        number_of_layers=6,
         dropout=0.1,
     ):
         super(Transformer, self).__init__()

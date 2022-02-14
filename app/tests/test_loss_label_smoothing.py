@@ -25,3 +25,7 @@ def test_loss_penalization():
     plt.plot(np.arange(1, 100), [loss(x) for x in range(1, 100)])
     plt.savefig("label_loss_penalizing.png")
     plt.close()
+
+
+if __name__ == "__main__":
+    test_loss_penalization()
