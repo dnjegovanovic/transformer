@@ -22,14 +22,3 @@ class InputEmbeddings(nn.Module):
         return self.embedding * math.sqrt(
             self.emb_size
         )  # from the paper multiplay embedded by sqrt of the emb_size(d_model)
-
-
-class PositionalEncoding(nn.Module):
-    def __init__(self, emb_size: int, seq_len: int, dropout: float) -> None:
-        super().__init__()
-
-        self.emb_size = emb_size
-        self.seq_len = seq_len
-        self.dropout = nn.Dropout(dropout)
-
-        # creting matrix shape of
