@@ -7,6 +7,13 @@ from .LayerNormalization import LayerNormalization
 
 class MultiHeadAttentionBlock(nn.Module):
     def __init__(self, emb_size: int, head_num: int, dropout: float) -> None:
+        """_summary_
+
+        Args:
+            emb_size (int): _description_
+            head_num (int): _description_
+            dropout (float): _description_
+        """
         super().__init__()
 
         self.emb_size = emb_size
