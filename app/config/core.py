@@ -4,10 +4,10 @@ from pydantic import BaseModel
 from strictyaml import YAML, load
 from yaml.loader import FullLoader
 import yaml
-import SDM_Pipeline_MNIST
+import app
 
 # Project Directories
-PACKAGE_ROOT = Path(SDM_Pipeline_MNIST.__file__).resolve().parent
+PACKAGE_ROOT = Path(app.__file__).resolve().parent
 ROOT = PACKAGE_ROOT.parent
 CONFIG_FILE_PATH = PACKAGE_ROOT / "config.yml"
 
