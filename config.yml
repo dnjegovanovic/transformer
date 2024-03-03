@@ -1,0 +1,18 @@
+package_name: Trnasformer
+save_file: "./test_dir"
+
+TR_model:
+  src_vocab_size : 1024
+  tgt_vocab_size : 100
+  src_seq_len : 350
+  tgt_seq_len : 500
+  lang_src: "en"
+  lang_tgt: "it"
+  d_model : 512
+  num_layer : 0.001
+  num_neads : 8
+  dropout: 0.0
+  d_ff: 256
+  lr: 0.0001
+  batch_size: 16
+  epochs: 20

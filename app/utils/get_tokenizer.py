@@ -7,6 +7,8 @@ from tokenizers.models import WordLevel
 from tokenizers.trainers import WordLevelTrainer
 from tokenizers.pre_tokenizers import Whitespace
 
+from app.dataset.BilingualDataSet import BilingualDataset, casual_mask
+
 from pathlib import Path
 
 
@@ -53,3 +55,35 @@ def get_ds(config):
     val_ds_size = int(0.1 * len(ds_raw))
 
     train_ds_raw, val_ds_raw = random_split(ds_raw, [train_ds_size, val_ds_size])
+
+    train_ds = BilingualDataset(
+        train_ds_raw,
+        tokenizer_src,
+        tokenizer_tgt,
+        config["lang_src"],
+        config["lang_tgt"],
+        config["seq_len"],
+    )
+    val_ds = BilingualDataset(
+        val_ds_raw,
+        tokenizer_src,
+        tokenizer_tgt,
+        config["lang_src"],
+        config["lang_tgt"],
+        config["seq_len"],
+    )
+
+    max_len_src = 0
+    max_len_tgt = 0
+
+    for item in ds_raw:
+        src_ids = tokenizer_src.encode(item["trnaslation"][config["lang_src"]]).ids
+        tgt_ids = tokenizer_src.encode(item["trnaslation"][config["lang_tgt"]]).ids
+
+        max_len_src = max(max_len_src, len(src_ids))
+        max_len_tgt = max(max_len_src, len(tgt_ids))
+
+    print(f"Max lengh of src seq: {max_len_src}")
+    print(f"Max lengh of src tgt: {max_len_tgt}")
+
+    return train_ds, val_ds, max_len_src, max_len_tgt

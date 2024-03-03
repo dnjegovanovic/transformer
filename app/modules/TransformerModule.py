@@ -12,7 +12,7 @@ from app.models.Encoder import Encoder, EncoderBlock
 from app.models.Decoder import Decoder, DecoderBlock
 from app.models.ProjectionLayer import ProjectionLayer
 from app.models.Transformer import Transformer
-
+from app.utils.get_tokenizer import get_ds
 import numpy as np
 
 
@@ -20,19 +20,25 @@ class TransformerModule(pl.LightningModule):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
         self.__dict__.update(kwargs=kwargs)
+        
+        self.src_vocab_size = self.TR_model["src_vocab_size"]
+        self.tgt_vocab_size = self.TR_model["tgt_vocab_size"]
+        self.src_seq_len = self.TR_model["src_seq_len"]
+        self.tgt_seq_len = self.TR_model["tgt_seq_len"]
+        self.d_model = self.TR_model["d_model"]
+        self.num_layer = self.TR_model["num_layer"]
+        self.num_neads = self.TR_model["num_neads"]
+        self.dropout = self.TR_model["dropout"]
+        self.d_ff = self.TR_model["d_ff"]
+        
+        self.config = self.TR_model
+        
+        self._build_model()
+        self._build_dataset()
         self.save_hyperparameters()
 
     def _build_model(
         self,
-        src_vocab_size: int,
-        tgt_vocab_size: int,
-        src_seq_len: int,
-        tgt_seq_len: int,
-        d_model: int = 512,
-        num_layer: int = 6,
-        num_neads: int = 8,
-        dropout: float = 0.1,
-        d_ff: int = 2,
     ):
         """_summary_
 
@@ -49,39 +55,39 @@ class TransformerModule(pl.LightningModule):
         """
 
         # create the embeding layers
-        self.src_embeded = InputEmbeddings(d_model, src_vocab_size)
-        self.tgt_embeded = InputEmbeddings(d_model, tgt_vocab_size)
+        self.src_embeded = InputEmbeddings(self.d_model, self.src_vocab_size)
+        self.tgt_embeded = InputEmbeddings(self.d_model, self.tgt_vocab_size)
 
         # crate the positional encoding layers
         # Can be used only one Positional encoding for encoder and decoder
         # but for process visibility we separate this encoding part
-        self.src_pos_enc = PositionalEncoding(d_model, src_seq_len, dropout)
-        self.tgt_pos_enc = PositionalEncoding(d_model, tgt_seq_len, dropout)
+        self.src_pos_enc = PositionalEncoding(self.d_model, self.src_seq_len, self.dropout)
+        self.tgt_pos_enc = PositionalEncoding(self.d_model, self.tgt_seq_len, self.dropout)
 
         # create the encoder blocks
         self.encoder_blocks = nn.ModuleList()
-        for _ in range(num_layer):
-            encoder_self_attn = MultiHeadAttentionBlock(d_model, num_neads, dropout)
-            feed_forward_block = PositionWiseFFN(d_model, d_ff, dropout)
-            encoder_block = EncoderBlock(encoder_self_attn, feed_forward_block, dropout)
+        for _ in range(self.num_layer):
+            encoder_self_attn = MultiHeadAttentionBlock(self.d_model, self.num_neads, self.dropout)
+            feed_forward_block = PositionWiseFFN(self.d_model, self.d_ff, self.dropout)
+            encoder_block = EncoderBlock(encoder_self_attn, feed_forward_block, self.dropout)
 
             self.encoder_blocks.append(encoder_block)
 
         # create the decoder blocks
         self.decoder_blocks = nn.ModuleList()
-        for _ in range(num_layer):
+        for _ in range(self.num_layer):
             decoder_self_attn_block = MultiHeadAttentionBlock(
-                d_model, num_neads, dropout
+                self.d_model, self.num_neads, self.dropout
             )
             decoder_cross_attn_block = MultiHeadAttentionBlock(
-                d_model, num_neads, dropout
+                self.d_model, self.num_neads, self.dropout
             )
-            feed_forward_block = PositionWiseFFN(d_model, d_ff, dropout)
+            feed_forward_block = PositionWiseFFN(self.d_model, self.d_ff, self.dropout)
             decoder_block = DecoderBlock(
                 decoder_self_attn_block,
                 decoder_cross_attn_block,
                 feed_forward_block,
-                dropout,
+                self.dropout,
             )
 
             self.decoder_blocks.append(decoder_block)
@@ -91,7 +97,7 @@ class TransformerModule(pl.LightningModule):
         self.decoder = Decoder(self.decoder_blocks)
 
         # create the projection layer
-        self.proj_layer = ProjectionLayer(d_model, tgt_vocab_size)
+        self.proj_layer = ProjectionLayer(self.d_model, self.tgt_vocab_size)
 
         # Crete the Transformer
         self.transformer_model = Transformer(
@@ -105,6 +111,11 @@ class TransformerModule(pl.LightningModule):
         )
 
         self.model_params = list(self.transformer_model.get_parameter())
+
+    def _build_dataset(self):
+        self.train_ds, self.val_ds, self.max_len_src, self.max_len_tgt = get_ds(
+            self.config
+        )
 
     def forward(self):
         raise NotImplemented
@@ -123,7 +134,23 @@ class TransformerModule(pl.LightningModule):
         return [opt_model], {"scheduler": scheduler}
 
     def train_dataloader(self):
-        raise NotImplemented
+        return DataLoader(
+            self.train_ds,
+            batch_size=self.batch_size,
+            num_workers=4,
+            pin_memory=True,
+            persistent_workers=True,
+            shuffle=True,
+            timeout=30,
+        )
 
     def val_dataloader(self):
-        raise NotImplemented
+        return DataLoader(
+            self.train_ds,
+            batch_size=self.batch_size,
+            num_workers=4,
+            pin_memory=True,
+            persistent_workers=True,
+            shuffle=False,
+            timeout=30,
+        )
