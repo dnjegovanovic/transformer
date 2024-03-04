@@ -56,8 +56,12 @@ def create_and_validate_config(parsed_config: YAML = None) -> Config:
         parsed_config = fetch_config_from_yaml()
         for k, v in parsed_config.items():
             if k == "TR_model":
-                parsed_config[k]["src_vocab_size"] = int(parsed_config[k]["src_vocab_size"])
-                parsed_config[k]["tgt_vocab_size"] = int(parsed_config[k]["tgt_vocab_size"])
+                parsed_config[k]["src_vocab_size"] = int(
+                    parsed_config[k]["src_vocab_size"]
+                )
+                parsed_config[k]["tgt_vocab_size"] = int(
+                    parsed_config[k]["tgt_vocab_size"]
+                )
                 parsed_config[k]["src_seq_len"] = int(parsed_config[k]["src_seq_len"])
                 parsed_config[k]["tgt_seq_len"] = int(parsed_config[k]["tgt_seq_len"])
                 parsed_config[k]["d_model"] = int(parsed_config[k]["d_model"])

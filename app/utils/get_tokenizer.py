@@ -86,4 +86,4 @@ def get_ds(config):
     print(f"Max lengh of src seq: {max_len_src}")
     print(f"Max lengh of src tgt: {max_len_tgt}")
 
-    return train_ds, val_ds, max_len_src, max_len_tgt
+    return train_ds, val_ds, tokenizer_src, tokenizer_tgt, max_len_src, max_len_tgt

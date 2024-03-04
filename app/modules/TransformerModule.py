@@ -15,12 +15,14 @@ from app.models.Transformer import Transformer
 from app.utils.get_tokenizer import get_ds
 import numpy as np
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class TransformerModule(pl.LightningModule):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
         self.__dict__.update(kwargs=kwargs)
-        
+
         self.src_vocab_size = self.TR_model["src_vocab_size"]
         self.tgt_vocab_size = self.TR_model["tgt_vocab_size"]
         self.src_seq_len = self.TR_model["src_seq_len"]
@@ -30,11 +32,11 @@ class TransformerModule(pl.LightningModule):
         self.num_neads = self.TR_model["num_neads"]
         self.dropout = self.TR_model["dropout"]
         self.d_ff = self.TR_model["d_ff"]
-        
+
         self.config = self.TR_model
         
-        self._build_model()
         self._build_dataset()
+        self._build_model()
         self.save_hyperparameters()
 
     def _build_model(
@@ -61,15 +63,23 @@ class TransformerModule(pl.LightningModule):
         # crate the positional encoding layers
         # Can be used only one Positional encoding for encoder and decoder
         # but for process visibility we separate this encoding part
-        self.src_pos_enc = PositionalEncoding(self.d_model, self.src_seq_len, self.dropout)
-        self.tgt_pos_enc = PositionalEncoding(self.d_model, self.tgt_seq_len, self.dropout)
+        self.src_pos_enc = PositionalEncoding(
+            self.d_model, self.src_seq_len, self.dropout
+        )
+        self.tgt_pos_enc = PositionalEncoding(
+            self.d_model, self.tgt_seq_len, self.dropout
+        )
 
         # create the encoder blocks
         self.encoder_blocks = nn.ModuleList()
         for _ in range(self.num_layer):
-            encoder_self_attn = MultiHeadAttentionBlock(self.d_model, self.num_neads, self.dropout)
+            encoder_self_attn = MultiHeadAttentionBlock(
+                self.d_model, self.num_neads, self.dropout
+            )
             feed_forward_block = PositionWiseFFN(self.d_model, self.d_ff, self.dropout)
-            encoder_block = EncoderBlock(encoder_self_attn, feed_forward_block, self.dropout)
+            encoder_block = EncoderBlock(
+                encoder_self_attn, feed_forward_block, self.dropout
+            )
 
             self.encoder_blocks.append(encoder_block)
 
@@ -108,23 +118,78 @@ class TransformerModule(pl.LightningModule):
             self.src_pos_enc,
             self.tgt_pos_enc,
             self.proj_layer,
-        )
+        ).to(device)
 
         self.model_params = list(self.transformer_model.get_parameter())
+        self.loss_fn = nn.CrossEntropyLoss(ignore_index=self.tokenizer_src.token_to_id('PAD'), label_smoothing=0.1).to(device)
 
     def _build_dataset(self):
-        self.train_ds, self.val_ds, self.max_len_src, self.max_len_tgt = get_ds(
-            self.config
-        )
+        (
+            self.train_ds,
+            self.val_ds,
+            self.tokenizer_src,
+            self.tokenizer_tgt,
+            self.max_len_src,
+            self.max_len_tgt,
+        ) = get_ds(self.config)
 
-    def forward(self):
-        raise NotImplemented
-
+    def forward(self, x):
+        encoder_input = x['encoder_input'] # (batch, seq_len)
+        decoder_input = x['decoder_input'] # (batch, seq_len)
+        encoder_mask = x["encoder_mask"] # (batch, 1 ,1 seq_len)
+        decoder_mask = x["decoder_mask"] # (batch, 1, seq_len, seq_len)
+        
+        encoder_out = self.transformer_model.encode(encoder_input, encoder_mask) #(batch, seq_len,d_model)
+        decoder_out = self.transformer_model.decode(encoder_out,encoder_mask, decoder_input, decoder_mask) #(batch, seq_len,d_model)
+        
+        proj_out = self.transformer_model.project(decoder_out) # (batch, seq_len, tgt_voacb_size)
+        
+        # get label from batch
+        label = x['label'] #(batch, seq_len)
+        loss = self.loss_fn(proj_out.view(-1, self.tokenizer_tgt.get_vocab_size()), label.view(-1))
+        
+        return loss
+        
+        
     def training_step(self, sample, batch_idx):
-        raise NotImplemented
+        
+        encoder_input = sample['encoder_input'] # (batch, seq_len)
+        decoder_input = sample['decoder_input'] # (batch, seq_len)
+        encoder_mask = sample["encoder_mask"] # (batch, 1 ,1 seq_len)
+        decoder_mask = sample["decoder_mask"] # (batch, 1, seq_len, seq_len)
+        
+        encoder_out = self.transformer_model.encode(encoder_input, encoder_mask) #(batch, seq_len,d_model)
+        decoder_out = self.transformer_model.decode(encoder_out,encoder_mask, decoder_input, decoder_mask) #(batch, seq_len,d_model)
+        
+        proj_out = self.transformer_model.project(decoder_out) # (batch, seq_len, tgt_voacb_size)
+        
+        # get label from batch
+        label = sample['label'] #(batch, seq_len)
+        loss = self.loss_fn(proj_out.view(-1, self.tokenizer_tgt.get_vocab_size()), label.view(-1))
+        
+        self.log("train_loss", loss.item(), prog_bar=True)
+        
+        return loss
 
     def validation_step(self, sample, batch_idx):
-        raise NotImplemented
+        
+        encoder_input = sample['encoder_input'] # (batch, seq_len)
+        decoder_input = sample['decoder_input'] # (batch, seq_len)
+        encoder_mask = sample["encoder_mask"] # (batch, 1 ,1 seq_len)
+        decoder_mask = sample["decoder_mask"] # (batch, 1, seq_len, seq_len)
+        
+        encoder_out = self.transformer_model.encode(encoder_input, encoder_mask) #(batch, seq_len,d_model)
+        decoder_out = self.transformer_model.decode(encoder_out,encoder_mask, decoder_input, decoder_mask) #(batch, seq_len,d_model)
+        
+        proj_out = self.transformer_model.project(decoder_out) # (batch, seq_len, tgt_voacb_size)
+        
+        # get label from batch
+        label = sample['label'] #(batch, seq_len)
+        loss = self.loss_fn(proj_out.view(-1, self.tokenizer_tgt.get_vocab_size()), label.view(-1))
+        
+        self.log("val_loss", loss.item(), prog_bar=True)
+        
+        return loss
 
     def configure_optimizers(self):
         opt_model = Adam([{"params": self.model_params}], lr=self.lr)
