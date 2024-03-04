@@ -134,6 +134,7 @@ class TransformerModule(pl.LightningModule):
         ) = get_ds(self.config)
 
     def forward(self, x):
+        
         encoder_input = x['encoder_input'] # (batch, seq_len)
         decoder_input = x['decoder_input'] # (batch, seq_len)
         encoder_mask = x["encoder_mask"] # (batch, 1 ,1 seq_len)
@@ -144,24 +145,12 @@ class TransformerModule(pl.LightningModule):
         
         proj_out = self.transformer_model.project(decoder_out) # (batch, seq_len, tgt_voacb_size)
         
-        # get label from batch
-        label = x['label'] #(batch, seq_len)
-        loss = self.loss_fn(proj_out.view(-1, self.tokenizer_tgt.get_vocab_size()), label.view(-1))
-        
-        return loss
+        return proj_out
         
         
     def training_step(self, sample, batch_idx):
         
-        encoder_input = sample['encoder_input'] # (batch, seq_len)
-        decoder_input = sample['decoder_input'] # (batch, seq_len)
-        encoder_mask = sample["encoder_mask"] # (batch, 1 ,1 seq_len)
-        decoder_mask = sample["decoder_mask"] # (batch, 1, seq_len, seq_len)
-        
-        encoder_out = self.transformer_model.encode(encoder_input, encoder_mask) #(batch, seq_len,d_model)
-        decoder_out = self.transformer_model.decode(encoder_out,encoder_mask, decoder_input, decoder_mask) #(batch, seq_len,d_model)
-        
-        proj_out = self.transformer_model.project(decoder_out) # (batch, seq_len, tgt_voacb_size)
+        proj_out = self(sample)
         
         # get label from batch
         label = sample['label'] #(batch, seq_len)
