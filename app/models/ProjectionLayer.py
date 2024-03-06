@@ -23,4 +23,5 @@ class ProjectionLayer(nn.Module):
         """
 
         # Applay softmax for numerical stability
-        return torch.log_softmax(self.proj_layer(x), dim=-1)
+        # torch.log_softmax(self.proj_layer(x), dim=-1)
+        return  self.proj_layer(x)

@@ -17,7 +17,7 @@ if __name__ == "__main__":
         logger=logger,
         check_val_every_n_epoch=10,
         max_epochs=config.model_transformer.TR_model["epochs"],
-        log_every_n_steps=10,
+        log_every_n_steps=5,
     )
     
     model = TransformerModule(**vars(config.model_transformer))

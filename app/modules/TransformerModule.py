@@ -122,7 +122,7 @@ class TransformerModule(pl.LightningModule):
 
         self.model_params = list(self.transformer_model.parameters())
         self.loss_fn = nn.CrossEntropyLoss(
-            ignore_index=self.tokenizer_src.token_to_id("PAD"), label_smoothing=0.1
+            ignore_index=self.tokenizer_src.token_to_id('[PAD]'), label_smoothing=0.1
         ).to(device)
 
     def _build_dataset(self):
@@ -134,6 +134,9 @@ class TransformerModule(pl.LightningModule):
             self.max_len_src,
             self.max_len_tgt,
         ) = get_ds(self.config)
+        
+        self.src_vocab_size = self.tokenizer_src.get_vocab_size()
+        self.tgt_vocab_size = self.tokenizer_tgt.get_vocab_size()
 
     def forward(self, x):
         encoder_input = x["encoder_input"]  # (batch, seq_len)
