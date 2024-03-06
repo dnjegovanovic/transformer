@@ -21,7 +21,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class TransformerModule(pl.LightningModule):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
-        self.__dict__.update(kwargs=kwargs)
+        self.__dict__.update(kwargs)
 
         self.src_vocab_size = self.TR_model["src_vocab_size"]
         self.tgt_vocab_size = self.TR_model["tgt_vocab_size"]
@@ -34,7 +34,7 @@ class TransformerModule(pl.LightningModule):
         self.d_ff = self.TR_model["d_ff"]
 
         self.config = self.TR_model
-        
+
         self._build_dataset()
         self._build_model()
         self.save_hyperparameters()
@@ -120,8 +120,10 @@ class TransformerModule(pl.LightningModule):
             self.proj_layer,
         ).to(device)
 
-        self.model_params = list(self.transformer_model.get_parameter())
-        self.loss_fn = nn.CrossEntropyLoss(ignore_index=self.tokenizer_src.token_to_id('PAD'), label_smoothing=0.1).to(device)
+        self.model_params = list(self.transformer_model.parameters())
+        self.loss_fn = nn.CrossEntropyLoss(
+            ignore_index=self.tokenizer_src.token_to_id("PAD"), label_smoothing=0.1
+        ).to(device)
 
     def _build_dataset(self):
         (
@@ -134,77 +136,75 @@ class TransformerModule(pl.LightningModule):
         ) = get_ds(self.config)
 
     def forward(self, x):
-        
-        encoder_input = x['encoder_input'] # (batch, seq_len)
-        decoder_input = x['decoder_input'] # (batch, seq_len)
-        encoder_mask = x["encoder_mask"] # (batch, 1 ,1 seq_len)
-        decoder_mask = x["decoder_mask"] # (batch, 1, seq_len, seq_len)
-        
-        encoder_out = self.transformer_model.encode(encoder_input, encoder_mask) #(batch, seq_len,d_model)
-        decoder_out = self.transformer_model.decode(encoder_out,encoder_mask, decoder_input, decoder_mask) #(batch, seq_len,d_model)
-        
-        proj_out = self.transformer_model.project(decoder_out) # (batch, seq_len, tgt_voacb_size)
-        
+        encoder_input = x["encoder_input"]  # (batch, seq_len)
+        decoder_input = x["decoder_input"]  # (batch, seq_len)
+        encoder_mask = x["encoder_mask"]  # (batch, 1 ,1 seq_len)
+        decoder_mask = x["decoder_mask"]  # (batch, 1, seq_len, seq_len)
+
+        encoder_out = self.transformer_model.encode(
+            encoder_input, encoder_mask
+        )  # (batch, seq_len,d_model)
+        decoder_out = self.transformer_model.decode(
+            encoder_out, encoder_mask, decoder_input, decoder_mask
+        )  # (batch, seq_len,d_model)
+
+        proj_out = self.transformer_model.project(
+            decoder_out
+        )  # (batch, seq_len, tgt_voacb_size)
+
         return proj_out
-        
-        
+
     def training_step(self, sample, batch_idx):
-        
         proj_out = self(sample)
-        
+
         # get label from batch
-        label = sample['label'] #(batch, seq_len)
-        loss = self.loss_fn(proj_out.view(-1, self.tokenizer_tgt.get_vocab_size()), label.view(-1))
-        
+        label = sample["label"]  # (batch, seq_len)
+        loss = self.loss_fn(
+            proj_out.view(-1, self.tokenizer_tgt.get_vocab_size()), label.view(-1)
+        )
+
         self.log("train_loss", loss.item(), prog_bar=True)
-        
+
         return loss
 
     def validation_step(self, sample, batch_idx):
         
-        encoder_input = sample['encoder_input'] # (batch, seq_len)
-        decoder_input = sample['decoder_input'] # (batch, seq_len)
-        encoder_mask = sample["encoder_mask"] # (batch, 1 ,1 seq_len)
-        decoder_mask = sample["decoder_mask"] # (batch, 1, seq_len, seq_len)
-        
-        encoder_out = self.transformer_model.encode(encoder_input, encoder_mask) #(batch, seq_len,d_model)
-        decoder_out = self.transformer_model.decode(encoder_out,encoder_mask, decoder_input, decoder_mask) #(batch, seq_len,d_model)
-        
-        proj_out = self.transformer_model.project(decoder_out) # (batch, seq_len, tgt_voacb_size)
-        
+        proj_out = self(sample)
         # get label from batch
-        label = sample['label'] #(batch, seq_len)
-        loss = self.loss_fn(proj_out.view(-1, self.tokenizer_tgt.get_vocab_size()), label.view(-1))
-        
+        label = sample["label"]  # (batch, seq_len)
+        loss = self.loss_fn(
+            proj_out.view(-1, self.tokenizer_tgt.get_vocab_size()), label.view(-1)
+        )
+
         self.log("val_loss", loss.item(), prog_bar=True)
-        
+
         return loss
 
     def configure_optimizers(self):
-        opt_model = Adam([{"params": self.model_params}], lr=self.lr)
+        opt_model = Adam([{"params": self.model_params}], lr=self.TR_model["lr"])
         scheduler = torch.optim.lr_scheduler.LambdaLR(
-            opt_model, lr_lambda=lambda epoch: max(0.2, 0.98**self.num_epochs)
+            opt_model, lr_lambda=lambda epoch: max(0.2, 0.98**self.TR_model["epochs"])
         )
         return [opt_model], {"scheduler": scheduler}
 
     def train_dataloader(self):
         return DataLoader(
             self.train_ds,
-            batch_size=self.batch_size,
+            batch_size=self.TR_model["batch_size"],
             num_workers=4,
             pin_memory=True,
             persistent_workers=True,
             shuffle=True,
-            timeout=30,
+            timeout=120,
         )
 
     def val_dataloader(self):
         return DataLoader(
             self.train_ds,
-            batch_size=self.batch_size,
+            batch_size=self.TR_model["batch_size"],
             num_workers=4,
             pin_memory=True,
             persistent_workers=True,
             shuffle=False,
-            timeout=30,
+            timeout=120,
         )

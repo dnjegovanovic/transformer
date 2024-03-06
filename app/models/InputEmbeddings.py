@@ -19,6 +19,6 @@ class InputEmbeddings(nn.Module):
         self.embedding = nn.Embedding(vocab_size, emb_size)
 
     def forward(self, x):
-        return self.embedding * math.sqrt(
+        return self.embedding(x) * math.sqrt(
             self.emb_size
         )  # from the paper multiplay embedded by sqrt of the emb_size(d_model)

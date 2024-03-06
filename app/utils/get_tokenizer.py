@@ -26,19 +26,17 @@ def get_of_build_tokenizer(config, ds, lang):
         lang (_type_): foramt path by language
     """
 
-    tokenizer_path = Path(config["tokenizer_file"].format(lang))
+    tokenizer_path = Path(config['tokenizer_file'].format(lang))
     if not Path.exists(tokenizer_path):
-        tokinazer = Tokenizer(WordLevel(unk_token="[UNK]"))
-        tokinazer.pre_tokenizer = Whitespace()
-        trainer = WordLevelTrainer(
-            special_tokens=["[UNK]", "[PAD]", "[SOS]", "[EOS]"], min_frequency=2
-        )
-        tokinazer.train_from_iterator(get_all_sentences(ds, lang), trainer=trainer)
-        tokinazer.save(str(tokenizer_path))
-
+        # Most code taken from: https://huggingface.co/docs/tokenizers/quicktour
+        tokenizer = Tokenizer(WordLevel(unk_token="[UNK]"))
+        tokenizer.pre_tokenizer = Whitespace()
+        trainer = WordLevelTrainer(special_tokens=["[UNK]", "[PAD]", "[SOS]", "[EOS]"], min_frequency=2)
+        tokenizer.train_from_iterator(get_all_sentences(ds, lang), trainer=trainer)
+        tokenizer.save(str(tokenizer_path))
     else:
         tokenizer = Tokenizer.from_file(str(tokenizer_path))
-
+    return tokenizer
 
 def get_ds(config):
     ds_raw = load_dataset(
@@ -50,11 +48,9 @@ def get_ds(config):
     tokenizer_tgt = get_of_build_tokenizer(config, ds_raw, config["lang_tgt"])
 
     # Split train-valid
-
-    train_ds_size = int(0.9 * len(ds_raw))
-    val_ds_size = int(0.1 * len(ds_raw))
-
-    train_ds_raw, val_ds_raw = random_split(ds_raw, [train_ds_size, val_ds_size])
+    ds_size = len(ds_raw)
+    print(f"DS SIZE: {ds_size}")
+    train_ds_raw, val_ds_raw = random_split(ds_raw, [0.9, 0.1])
 
     train_ds = BilingualDataset(
         train_ds_raw,
@@ -77,8 +73,8 @@ def get_ds(config):
     max_len_tgt = 0
 
     for item in ds_raw:
-        src_ids = tokenizer_src.encode(item["trnaslation"][config["lang_src"]]).ids
-        tgt_ids = tokenizer_src.encode(item["trnaslation"][config["lang_tgt"]]).ids
+        src_ids = tokenizer_src.encode(item["translation"][config["lang_src"]]).ids
+        tgt_ids = tokenizer_src.encode(item["translation"][config["lang_tgt"]]).ids
 
         max_len_src = max(max_len_src, len(src_ids))
         max_len_tgt = max(max_len_src, len(tgt_ids))

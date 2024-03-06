@@ -74,7 +74,7 @@ def create_and_validate_config(parsed_config: YAML = None) -> Config:
 
     _config = Config(
         app_config=AppConfig(**parsed_config),
-        model_UnetSP=Transformer(**parsed_config),
+        model_transformer=Transformer(**parsed_config),
     )
 
     return _config

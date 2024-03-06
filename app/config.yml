@@ -6,6 +6,7 @@ TR_model:
   tgt_vocab_size : 100
   src_seq_len : 350
   tgt_seq_len : 500
+  seq_len : 350
   lang_src: "en"
   lang_tgt: "it"
   d_model : 512
@@ -17,3 +18,4 @@ TR_model:
   batch_size: 16
   epochs: 20
   ckpt_file: None
+  tokenizer_file: "tokenizer_{0}.json"
