@@ -7,7 +7,7 @@ from tokenizers.models import WordLevel
 from tokenizers.trainers import WordLevelTrainer
 from tokenizers.pre_tokenizers import Whitespace
 
-from app.dataset.BilingualDataSet import BilingualDataset, casual_mask
+from dataset.BilingualDataSet import BilingualDataset, casual_mask
 
 from pathlib import Path
 

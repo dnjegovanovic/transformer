@@ -4,10 +4,10 @@ from pydantic import BaseModel
 from strictyaml import YAML, load
 from yaml.loader import FullLoader
 import yaml
-import app
+import transformer_app
 
 # Project Directories
-PACKAGE_ROOT = Path(app.__file__).resolve().parent
+PACKAGE_ROOT = Path(transformer_app.__file__).resolve().parent
 ROOT = PACKAGE_ROOT.parent
 CONFIG_FILE_PATH = PACKAGE_ROOT / "config.yml"
 

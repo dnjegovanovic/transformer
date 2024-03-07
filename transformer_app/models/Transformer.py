@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
 
-from app.models.InputEmbeddings import InputEmbeddings
-from app.models.Encoder import Encoder
-from app.models.Decoder import Decoder
-from app.models.PositionalEncoding import PositionalEncoding
-from app.models.ProjectionLayer import ProjectionLayer
+from models.InputEmbeddings import InputEmbeddings
+from models.Encoder import Encoder
+from models.Decoder import Decoder
+from models.PositionalEncoding import PositionalEncoding
+from models.ProjectionLayer import ProjectionLayer
 
 
 class Transformer(nn.Module):

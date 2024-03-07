@@ -1,5 +1,5 @@
-from app.modules.TransformerModule import *
-from app.config.core import config
+from transformer_app.modules.TransformerModule import *
+from transformer_app.config.core import config
 
 import pytorch_lightning as pl
 import pytorch_lightning.loggers as loggers

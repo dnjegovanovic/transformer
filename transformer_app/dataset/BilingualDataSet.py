@@ -94,6 +94,8 @@ class BilingualDataset(Dataset):
                 decoder_input.size(0)
             ),  # casual mask (1, seq_len) & (1, seq_len,seq_len)
             "label": label,
+            "src_text": src_text,
+            "tgt_text": tgt_text,
         }
 
 

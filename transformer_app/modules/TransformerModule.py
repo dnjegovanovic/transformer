@@ -4,15 +4,16 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 
-from app.models.InputEmbeddings import InputEmbeddings
-from app.models.PositionalEncoding import PositionalEncoding
-from app.models.MultiHeadAttentionBlock import MultiHeadAttentionBlock
-from app.models.PositionWiseFFN import PositionWiseFFN
-from app.models.Encoder import Encoder, EncoderBlock
-from app.models.Decoder import Decoder, DecoderBlock
-from app.models.ProjectionLayer import ProjectionLayer
-from app.models.Transformer import Transformer
-from app.utils.get_tokenizer import get_ds
+from models.InputEmbeddings import InputEmbeddings
+from models.PositionalEncoding import PositionalEncoding
+from models.MultiHeadAttentionBlock import MultiHeadAttentionBlock
+from models.PositionWiseFFN import PositionWiseFFN
+from models.Encoder import Encoder, EncoderBlock
+from models.Decoder import Decoder, DecoderBlock
+from models.ProjectionLayer import ProjectionLayer
+from models.Transformer import Transformer
+from utils.get_tokenizer import get_ds
+from dataset.BilingualDataSet import casual_mask
 import numpy as np
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -32,7 +33,7 @@ class TransformerModule(pl.LightningModule):
         self.num_neads = self.TR_model["num_neads"]
         self.dropout = self.TR_model["dropout"]
         self.d_ff = self.TR_model["d_ff"]
-
+        self.max_len = self.TR_model["seq_len"]
         self.config = self.TR_model
 
         self._build_dataset()
@@ -137,7 +138,73 @@ class TransformerModule(pl.LightningModule):
         
         self.src_vocab_size = self.tokenizer_src.get_vocab_size()
         self.tgt_vocab_size = self.tokenizer_tgt.get_vocab_size()
+        
+    def test_on_validation(self, num_of_batch: int = 1):
+        self.transformer_model.eval()
+        
+        couter = 0
+        console_width = 80
+        with torch.no_grad():
+            val_ds = self.val_dataloader()
+            for batch in val_ds:
+                if couter > num_of_batch:
+                    print('-'*console_width)
+                    break
+                encoder_input = batch["encoder_input"]  # (batch, seq_len)
+                encoder_mask = batch["encoder_mask"]  # (batch, 1 ,1 seq_len)
+                
+                            # check that the batch size is 1
+                assert encoder_input.size(
+                    0) == self.TR_model["batch_size"], "Batch size must be 1 for validation"
+                
+                c_batch = 0
+                for e_i, e_m in  zip(encoder_input, encoder_mask):
+                    model_out = self._greedy_decode(e_i.to(device), e_m.to(device), self.tokenizer_src, self.tokenizer_tgt, self.max_len, device)
+                    source_text = batch["src_text"][c_batch]
+                    target_text = batch["tgt_text"][c_batch]
+                    model_out_text = self.tokenizer_tgt.decode(model_out.detach().cpu().numpy())
+                    
+                    couter += 1
+                    
+                    # Print the source, target and model output
+                    print('-'*console_width)
+                    print(f"{f'SOURCE: ':>12}{source_text}")
+                    print(f"{f'TARGET: ':>12}{target_text}")
+                    print(f"{f'PREDICTED: ':>12}{model_out_text}")
+                    c_batch += 1
 
+                
+    
+    def _greedy_decode(self,source, src_mask, tokenizer_src, tokenizer_tgt, max_len, device):
+        sos_idx = tokenizer_tgt.token_to_id('[SOS]')
+        eos_idx = tokenizer_tgt.token_to_id('[EOS]')
+
+        # Precompute the encoder output and reuse it for every step
+        encoder_output = self.transformer_model.encode(source, src_mask)
+        # Initialize the decoder input with the sos token
+        decoder_input = torch.empty(1, 1).fill_(sos_idx).type_as(source).to(device)
+        while True:
+            if decoder_input.size(1) == max_len:
+                break
+
+            # build mask for target
+            decoder_mask = casual_mask(decoder_input.size(1)).type_as(src_mask).to(device)
+
+            # calculate output
+            out = self.transformer_model.decode(encoder_output, src_mask, decoder_input, decoder_mask)
+
+            # get next token
+            prob = self.transformer_model.project(out[:, -1])
+            _, next_word = torch.max(prob, dim=1)
+            decoder_input = torch.cat(
+                [decoder_input, torch.empty(1, 1).type_as(source).fill_(next_word.item()).to(device)], dim=1
+            )
+
+            if next_word == eos_idx:
+                break
+
+        return decoder_input.squeeze(0)
+    
     def forward(self, x):
         encoder_input = x["encoder_input"]  # (batch, seq_len)
         decoder_input = x["decoder_input"]  # (batch, seq_len)
