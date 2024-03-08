@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
-
-from models.InputEmbeddings import InputEmbeddings
-from models.Encoder import Encoder
 from models.Decoder import Decoder
+from models.Encoder import Encoder
+from models.InputEmbeddings import InputEmbeddings
 from models.PositionalEncoding import PositionalEncoding
 from models.ProjectionLayer import ProjectionLayer
 

@@ -1,8 +1,7 @@
-from modules.TransformerModule import *
-from config.core import config
-
 import pytorch_lightning as pl
 import pytorch_lightning.loggers as loggers
+from config.core import config
+from modules.TransformerModule import *
 
 if __name__ == "__main__":
     save_dir = config.app_config.save_file
@@ -19,7 +18,7 @@ if __name__ == "__main__":
         max_epochs=config.model_transformer.TR_model["epochs"],
         log_every_n_steps=5,
     )
-    
+
     model = TransformerModule(**vars(config.model_transformer))
     train.fit(model)
 # end main

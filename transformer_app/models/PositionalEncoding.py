@@ -1,6 +1,7 @@
+import math
+
 import torch
 import torch.nn as nn
-import math
 
 
 class PositionalEncoding(nn.Module):
@@ -19,7 +20,7 @@ class PositionalEncoding(nn.Module):
 
         # positional encoding formula
         div_term = torch.exp(
-            torch.arange(0, emb_size,2).float() * (-math.log(10000.0) / emb_size)
+            torch.arange(0, emb_size, 2).float() * (-math.log(10000.0) / emb_size)
         )  # numerical stabiliti
 
         # applay sin cos
@@ -33,5 +34,5 @@ class PositionalEncoding(nn.Module):
         self.register_buffer("pos_enc", pos_enc)
 
     def forward(self, x):
-        x = x + (self.pos_enc[:, :x.shape[1], :]).requires_grad_(False)
+        x = x + (self.pos_enc[:, : x.shape[1], :]).requires_grad_(False)
         return self.dropout(x)

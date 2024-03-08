@@ -1,9 +1,11 @@
 from pathlib import Path
 from typing import Dict
+
+import yaml
 from pydantic import BaseModel
 from strictyaml import YAML, load
 from yaml.loader import FullLoader
-import yaml
+
 import transformer_app
 
 # Project Directories

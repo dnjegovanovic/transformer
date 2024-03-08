@@ -1,6 +1,6 @@
 import torch
 
-from models import MultiHeadAttentionBlock as MHAB
+from transformer_app.models import MultiHeadAttentionBlock as MHAB
 
 
 def test_multiheadattention_block():

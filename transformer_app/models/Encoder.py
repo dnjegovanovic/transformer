@@ -1,16 +1,16 @@
-import torch
-import torch.nn as nn
 import math
 
+import torch
+import torch.nn as nn
+from models.LayerNormalization import LayerNormalization as LN
 from models.MultiHeadAttentionBlock import MultiHeadAttentionBlock as MHAB
 from models.MultiHeadAttentionBlock import ResidualConnection as ResCon
 from models.PositionWiseFFN import PositionWiseFFN as PFFN
-from models.LayerNormalization import LayerNormalization as LN
 
 
 class EncoderBlock(nn.Module):
     def __init__(
-        self,self_attn_block: MHAB, feed_forward_net: PFFN, dropout: float
+        self, self_attn_block: MHAB, feed_forward_net: PFFN, dropout: float
     ) -> None:
         super().__init__()
 
@@ -26,7 +26,7 @@ class EncoderBlock(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self,layers: nn.ModuleList) -> None:
+    def __init__(self, layers: nn.ModuleList) -> None:
         super().__init__()
 
         self.layers = layers

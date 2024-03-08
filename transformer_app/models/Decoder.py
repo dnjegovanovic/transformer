@@ -1,10 +1,9 @@
 import torch
 import torch.nn as nn
-
+from models.LayerNormalization import LayerNormalization as LN
 from models.MultiHeadAttentionBlock import MultiHeadAttentionBlock as MHAB
 from models.MultiHeadAttentionBlock import ResidualConnection as ResCon
 from models.PositionWiseFFN import PositionWiseFFN as PFFN
-from models.LayerNormalization import LayerNormalization as LN
 
 
 class DecoderBlock(nn.Module):
