@@ -25,10 +25,10 @@ class MultiHeadAttentionBlock(nn.Module):
         self.d_k = emb_size // head_num
 
         # Construct Wk, Wv, Wq
-        self.w_q = nn.Linear(emb_size, emb_size)
-        self.w_k = nn.Linear(emb_size, emb_size)
-        self.w_v = nn.Linear(emb_size, emb_size)
-        self.w_o = nn.Linear(emb_size, emb_size)
+        self.w_q = nn.Linear(emb_size, emb_size, bias=False)
+        self.w_k = nn.Linear(emb_size, emb_size, bias=False)
+        self.w_v = nn.Linear(emb_size, emb_size, bias=False)
+        self.w_o = nn.Linear(emb_size, emb_size, bias=False)
 
         self.dropout = nn.Dropout(dropout)
 

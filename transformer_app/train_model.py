@@ -1,4 +1,3 @@
-import pytorch_lightning as pl
 import pytorch_lightning.loggers as loggers
 from config.core import config
 from modules.TransformerModule import *

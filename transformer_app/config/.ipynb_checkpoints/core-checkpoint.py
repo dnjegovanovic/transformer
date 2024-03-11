@@ -70,7 +70,7 @@ def create_and_validate_config(parsed_config: YAML = None) -> Config:
                 parsed_config[k]["tgt_seq_len"] = int(parsed_config[k]["tgt_seq_len"])
                 parsed_config[k]["d_model"] = int(parsed_config[k]["d_model"])
                 parsed_config[k]["num_layer"] = int(parsed_config[k]["num_layer"])
-                parsed_config[k]["num_heads"] = int(parsed_config[k]["num_heads"])
+                parsed_config[k]["num_neads"] = int(parsed_config[k]["num_neads"])
                 parsed_config[k]["dropout"] = float(parsed_config[k]["dropout"])
                 parsed_config[k]["d_ff"] = int(parsed_config[k]["d_ff"])
             else:

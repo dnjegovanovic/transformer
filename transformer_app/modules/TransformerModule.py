@@ -29,10 +29,11 @@ class TransformerModule(pl.LightningModule):
         self.tgt_seq_len = self.TR_model["tgt_seq_len"]
         self.d_model = self.TR_model["d_model"]
         self.num_layer = self.TR_model["num_layer"]
-        self.num_neads = self.TR_model["num_neads"]
+        self.num_heads = self.TR_model["num_heads"]
         self.dropout = self.TR_model["dropout"]
         self.d_ff = self.TR_model["d_ff"]
         self.max_len = self.TR_model["seq_len"]
+        self.batch_size = self.TR_model["batch_size"]
         self.config = self.TR_model
 
         self._build_dataset()
@@ -74,7 +75,7 @@ class TransformerModule(pl.LightningModule):
         self.encoder_blocks = nn.ModuleList()
         for _ in range(self.num_layer):
             encoder_self_attn = MultiHeadAttentionBlock(
-                self.d_model, self.num_neads, self.dropout
+                self.d_model, self.num_heads, self.dropout
             )
             feed_forward_block = PositionWiseFFN(self.d_model, self.d_ff, self.dropout)
             encoder_block = EncoderBlock(
@@ -87,10 +88,10 @@ class TransformerModule(pl.LightningModule):
         self.decoder_blocks = nn.ModuleList()
         for _ in range(self.num_layer):
             decoder_self_attn_block = MultiHeadAttentionBlock(
-                self.d_model, self.num_neads, self.dropout
+                self.d_model, self.num_heads, self.dropout
             )
             decoder_cross_attn_block = MultiHeadAttentionBlock(
-                self.d_model, self.num_neads, self.dropout
+                self.d_model, self.num_heads, self.dropout
             )
             feed_forward_block = PositionWiseFFN(self.d_model, self.d_ff, self.dropout)
             decoder_block = DecoderBlock(
@@ -137,6 +138,10 @@ class TransformerModule(pl.LightningModule):
 
         self.src_vocab_size = self.tokenizer_src.get_vocab_size()
         self.tgt_vocab_size = self.tokenizer_tgt.get_vocab_size()
+        print(f"-"*80)
+        print(f"src_vocab_size:{self.src_vocab_size}")
+        print(f"tgt_vocab_size:{self.tgt_vocab_size}")
+        print(f"-"*80)
 
     def test_on_validation(self, num_of_batch: int = 1):
         self.transformer_model.eval()
@@ -146,41 +151,45 @@ class TransformerModule(pl.LightningModule):
         with torch.no_grad():
             val_ds = self.val_dataloader()
             for batch in val_ds:
-                if couter > num_of_batch:
+                if couter >= num_of_batch:
                     print("-" * console_width)
                     break
-                encoder_input = batch["encoder_input"]  # (batch, seq_len)
-                encoder_mask = batch["encoder_mask"]  # (batch, 1 ,1 seq_len)
-
-                # check that the batch size is 1
-                assert (
-                    encoder_input.size(0) == self.TR_model["batch_size"]
-                ), "Batch size must be 1 for validation"
+                encoder_input_b = batch["encoder_input"]  # (batch, seq_len)
+                encoder_mask_b = batch["encoder_mask"]  # (batch, 1 ,1 seq_len)
 
                 c_batch = 0
-                for e_i, e_m in zip(encoder_input, encoder_mask):
+                for bi in range(self.TR_model["batch_size"]):
+                    couter += 1
+                    encoder_input = encoder_input_b[bi]
+                    encoder_mask = encoder_mask_b[bi]
+                    encoder_input = encoder_input.view(1,encoder_input.shape[0])
+                    # check that the batch size is 1
+                    assert (
+                            encoder_input.size(0) == 1
+                    ), "Batch size must be 1 for validation"
+
                     model_out = self._greedy_decode(
-                        e_i.to(device),
-                        e_m.to(device),
+                        encoder_input.to(device),
+                        encoder_mask.to(device),
                         self.tokenizer_src,
                         self.tokenizer_tgt,
                         self.max_len,
                         device,
                     )
-                    source_text = batch["src_text"][c_batch]
-                    target_text = batch["tgt_text"][c_batch]
+                    source_text = batch["src_text"][bi]
+                    target_text = batch["tgt_text"][bi]
                     model_out_text = self.tokenizer_tgt.decode(
                         model_out.detach().cpu().numpy()
                     )
 
-                    couter += 1
+
 
                     # Print the source, target and model output
                     print("-" * console_width)
                     print(f"{f'SOURCE: ':>12}{source_text}")
                     print(f"{f'TARGET: ':>12}{target_text}")
                     print(f"{f'PREDICTED: ':>12}{model_out_text}")
-                    c_batch += 1
+                c_batch += 1
 
     def _greedy_decode(
         self, source, src_mask, tokenizer_src, tokenizer_tgt, max_len, device
@@ -270,16 +279,16 @@ class TransformerModule(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        opt_model = Adam([{"params": self.model_params}], lr=self.TR_model["lr"])
+        opt_model = Adam([{"params": self.model_params}], lr=self.TR_model["lr"],eps=1e-9)
         scheduler = torch.optim.lr_scheduler.LambdaLR(
             opt_model, lr_lambda=lambda epoch: max(0.2, 0.98 ** self.TR_model["epochs"])
         )
-        return [opt_model], {"scheduler": scheduler}
+        return [opt_model]#, {"scheduler": scheduler}
 
     def train_dataloader(self):
         return DataLoader(
             self.train_ds,
-            batch_size=self.TR_model["batch_size"],
+            batch_size=self.batch_size,
             num_workers=4,
             pin_memory=True,
             persistent_workers=True,
@@ -290,7 +299,7 @@ class TransformerModule(pl.LightningModule):
     def val_dataloader(self):
         return DataLoader(
             self.train_ds,
-            batch_size=self.TR_model["batch_size"],
+            batch_size=self.batch_size,
             num_workers=4,
             pin_memory=True,
             persistent_workers=True,
