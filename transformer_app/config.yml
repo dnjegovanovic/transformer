@@ -17,5 +17,5 @@ TR_model:
   lr: 0.0001
   batch_size: 16
   epochs: 20
-  ckpt_file: None
+  ckpt_file: ""
   tokenizer_file: "tokenizer_{}.json"

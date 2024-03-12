@@ -7,3 +7,4 @@ PyYAML==6.0.1
 setuptools==60.5.0
 strictyaml==1.7.3
 tokenizers==0.13.3
+altair==5.2.0

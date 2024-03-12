@@ -73,6 +73,7 @@ def create_and_validate_config(parsed_config: YAML = None) -> Config:
                 parsed_config[k]["num_heads"] = int(parsed_config[k]["num_heads"])
                 parsed_config[k]["dropout"] = float(parsed_config[k]["dropout"])
                 parsed_config[k]["d_ff"] = int(parsed_config[k]["d_ff"])
+                parsed_config[k]["ckpt_file"] = str(parsed_config[k]["ckpt_file"])
             else:
                 Exception("No configuration in config file.")
 
