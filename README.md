@@ -3,9 +3,9 @@
 This is a PyTorch implementation of the paper [Attention Is All You Need](https://arxiv.org/abs/1706.03762). The goal of this project is to provide a simple implementation of the paper.
 
 # Table of Contents
-[Theory Explanation](#Theory Explanation)
-   - [Input Embeddings](#Input Embeddings)
-   - [Positional Encoding](#Positional Encoding)
+[Theory Explanation](#TE)
+   - [Input Embeddings](#IE)
+   - [Positional Encoding](#PE)
    - [Single Head Attention and Multi Head Attention](#MHA)
    - [Normalization](Normalization)
    - [Encoder](#Encoder)
@@ -13,7 +13,7 @@ This is a PyTorch implementation of the paper [Attention Is All You Need](https:
 
 [Usage](#Usage)
 
-## Theory Explanation <a name="Theory Explanation"></a>
+## Theory Explanation <a name="TE"></a>
 
 For the Transformers architecture, we can say that it was created as a response to solving the problems that previous models such as LSTM and RNN had and it concerns a very slow calculation process and a problem called the disappearance of gradients. I will not talk about why these problems occur here, but the main focus will be on the general explanation of all the components of this model.
 At the very beginning, we can present what the entire architecture of the Transformers model looks like, which can be divided into two main blocks, namely the Encoder and Decoder blocks.
@@ -22,7 +22,7 @@ At the very beginning, we can present what the entire architecture of the Transf
   <img width="300" height="500" src="./theory_imgs/arch.PNG" style="transform:rotate(90deg);" />
 </p>
 
-### Input Embeddings <a name="Input Embeddings"></a>
+### Input Embeddings <a name="IE"></a>
 
 The idea of embedding an input vector is quite simple. Considering that this is a standard procedure in the NLP task, we will only say that the goal is to divide the input sequence into separate words and then project it into the embedded space, which then represents a sequence of numbers where each number represents one word. You can see the illustrated view in the picture below.
 
@@ -31,7 +31,7 @@ The idea of embedding an input vector is quite simple. Considering that this is 
 </p>
 
 
-### Positional Encoding <a name="Positional Encoding"></a>
+### Positional Encoding <a name="PE"></a>
 All the words are presented to the Transformer simultaneously. This is a huge difference to recurrent neural networks, e.g. LSTMs, where words are fed successively. However, this means that the order in which words occur in the input sequence is lost. To address this, the Transformer adds a vector to each input embedding, thus injecting some information about the relative or absolute position.
 
 <p align="center">
