@@ -8,7 +8,7 @@ For the Transformers architecture, we can say that it was created as a response 
 At the very beginning, we can present what the entire architecture of the Transformers model looks like, which can be divided into two main blocks, namely the Encoder and Decoder blocks.
 
 <p align="center">
-  <img src="./theory_imgs/arch.PNG" />
+  <img width="300" height="500" src="./theory_imgs/arch.PNG" />
 </p>
 
 ### Input Embeddings
