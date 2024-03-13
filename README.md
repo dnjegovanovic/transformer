@@ -2,6 +2,16 @@
 
 This is a PyTorch implementation of the paper [Attention Is All You Need](https://arxiv.org/abs/1706.03762). The goal of this project is to provide a simple implementation of the paper.
 
+# Table of Contents
+1. [Theory Explanation](#Theory Explanation)
+   2. [Input Embeddings](#Input Embeddings)
+   3. [Positional Encoding](#Positional Encoding)
+   4. [Single Head Attention and Multi Head Attention](#Single Head Attention and Multi Head Attention)
+   5. [Normalization](Normalization)
+   6. [Encoder](#Encoder)
+   7. [Decoder](#Decoder)
+2. [Usage](#Usage)
+
 ## Theory Explanation
 
 For the Transformers architecture, we can say that it was created as a response to solving the problems that previous models such as LSTM and RNN had and it concerns a very slow calculation process and a problem called the disappearance of gradients. I will not talk about why these problems occur here, but the main focus will be on the general explanation of all the components of this model.
@@ -82,5 +92,3 @@ The decoder’s job is to generate text sequences. The decoder has a similar sub
 </p>
 
 ## Usage
-
-## Results
