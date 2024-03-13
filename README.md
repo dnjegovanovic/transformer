@@ -16,7 +16,7 @@ At the very beginning, we can present what the entire architecture of the Transf
 The idea of embedding an input vector is quite simple. Considering that this is a standard procedure in the NLP task, we will only say that the goal is to divide the input sequence into separate words and then project it into the embedded space, which then represents a sequence of numbers where each number represents one word. You can see the illustrated view in the picture below.
 
 <p align="center">
-  <img width="300" height="200" src="./theory_imgs/input_emb.png" />
+  <img width="300" height="200" src="./theory_imgs/input_emb.PNG" />
 </p>
 
 
@@ -24,11 +24,11 @@ The idea of embedding an input vector is quite simple. Considering that this is 
 All the words are presented to the Transformer simultaneously. This is a huge difference to recurrent neural networks, e.g. LSTMs, where words are fed successively. However, this means that the order in which words occur in the input sequence is lost. To address this, the Transformer adds a vector to each input embedding, thus injecting some information about the relative or absolute position.
 
 <p align="center">
-  <img width="300" height="200" src="./theory_imgs/positional_encoding.png" />
+  <img width="300" height="200" src="./theory_imgs/positional_encoding.PNG" />
 </p>
 
 <p align="center">
-  <img width="300" height="200" src="./theory_imgs/positional_encoding_formula.png" />
+  <img width="300" height="200" src="./theory_imgs/positional_encoding_formula.PNG" />
 </p>
 
 ### Single Head Attention and Multi Head Attention
@@ -38,21 +38,21 @@ Multi-head attention allows the model to jointly attend to information from diff
 In the next two pictures, you will see how self attention is obtained.
 
 <p align="center">
-  <img width="300" height="200" src="./theory_imgs/self_att_1.png" />
+  <img width="300" height="200" src="./theory_imgs/self_att_1.PNG" />
 </p>
 
 <p align="center">
-  <img width="300" height="200" src="./theory_imgs/self_att_2.png" />
+  <img width="300" height="200" src="./theory_imgs/self_att_2.PNG" />
 </p>
 
 The Multi Head Attention mechanism is a scaled self attention mechanism and its representation is shown in the images below.
 
 <p align="center">
-  <img width="300" height="200" src="./theory_imgs/multi_head_att_1.png" />
+  <img width="300" height="200" src="./theory_imgs/multi_head_att_1.PNG" />
 </p>
 
 <p align="center">
-  <img width="300" height="200" src="./theory_imgs/multi_head_att_1_masked.png" />
+  <img width="300" height="200" src="./theory_imgs/multi_head_att_1_masked.PNG" />
 </p>
 
 ### Normalization
@@ -60,11 +60,11 @@ The Multi Head Attention mechanism is a scaled self attention mechanism and its 
 As is a frequent occurrence in different architectures, the normalization of data in layers can represent the key to obtaining stable training and better generalization. The normalization layer is completely different if we compare it with Batch normalization, and the main difference is the normalization axis. Illustrated in the following images:
 
 <p align="center">
-  <img width="300" height="200" src="./theory_imgs/normalization_layer.png" />
+  <img width="300" height="200" src="./theory_imgs/normalization_layer.PNG" />
 </p>
 
 <p align="center">
-  <img width="300" height="200" src="./theory_imgs/normalization_layer_2.png" />
+  <img width="300" height="200" src="./theory_imgs/normalization_layer_2.PNG" />
 </p>
 
 ### Encoder
@@ -72,7 +72,7 @@ As is a frequent occurrence in different architectures, the normalization of dat
 Now we have the encoder layer. The Encoders layers job is to map all input sequences into an abstract continuous representation that holds the learned information for that entire sequence. It contains 2 sub-modules, multi-headed attention, followed by a fully connected network. There are also residual connections around each of the two sublayers followed by a layer normalization.
 
 <p align="center">
-  <img src="./theory_imgs/encoder.png" />
+  <img src="./theory_imgs/encoder.PNG" />
 </p>
 
 ### Decoder
@@ -80,7 +80,7 @@ Now we have the encoder layer. The Encoders layers job is to map all input seque
 The decoder’s job is to generate text sequences. The decoder has a similar sub-layer as the encoder. it has two multi-headed attention layers, a pointwise feed-forward layer, and residual connections, and layer normalization after each sub-layer. These sub-layers behave similarly to the layers in the encoder but each multi-headed attention layer has a different job. The decoder is capped off with a linear layer that acts as a classifier, and a softmax to get the word probabilities.
 
 <p align="center">
-  <img src="./theory_imgs/decoder.png" />
+  <img src="./theory_imgs/decoder.PNG" />
 </p>
 
 ## Usage
