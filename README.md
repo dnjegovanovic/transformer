@@ -92,4 +92,12 @@ The decoder’s job is to generate text sequences. The decoder has a similar sub
   <img src="./theory_imgs/decoder.PNG" style="transform:rotate(90deg);" />
 </p>
 
+All images are taken from original paper and different blogs that explain Attention model.
+
 ## Usage <a name="Usage"></a>
+
+The project can be started in the following way using [tox](#https://tox.wiki/en/4.14.1/index.html) to automate the process.
+
+To tran model run in console: <i><b>tox -e train</b></i> This command will install the required env and start model training.
+To test your model run in console: <i><b>tox -e evalmodel</b></i> This command will install the required env and evaluate your model using validation data.
+
