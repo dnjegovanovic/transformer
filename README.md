@@ -3,14 +3,15 @@
 This is a PyTorch implementation of the paper [Attention Is All You Need](https://arxiv.org/abs/1706.03762). The goal of this project is to provide a simple implementation of the paper.
 
 # Table of Contents
-1. [Theory Explanation](#Theory Explanation)
-   2. [Input Embeddings](#Input Embeddings)
-   3. [Positional Encoding](#Positional Encoding)
-   4. [Single Head Attention and Multi Head Attention](#MHA)
-   5. [Normalization](Normalization)
-   6. [Encoder](#Encoder)
-   7. [Decoder](#Decoder)
-2. [Usage](#Usage)
+[Theory Explanation](#Theory Explanation)
+   - [Input Embeddings](#Input Embeddings)
+   - [Positional Encoding](#Positional Encoding)
+   - [Single Head Attention and Multi Head Attention](#MHA)
+   - [Normalization](Normalization)
+   - [Encoder](#Encoder)
+   - [Decoder](#Decoder)
+
+[Usage](#Usage)
 
 ## Theory Explanation <a name="Theory Explanation"></a>
 
